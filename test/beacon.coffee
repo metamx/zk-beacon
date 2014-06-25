@@ -4,7 +4,7 @@ exec = require('child_process').exec
 async = require('async')
 zookeeper = require('node-zookeeper-client')
 
-beakon = require '../src/beakon'
+beacon = require '../src/beacon'
 
 zkClient = zookeeper.createClient(
   'localhost:2181',
@@ -44,10 +44,10 @@ simpleExec = (cmd, done) ->
     done(err)
   )
 
-describe 'Beakon', ->
+describe 'Beacon', ->
   describe 'normal function', ->
     @timeout 5000
-    myBeakon = null
+    myBeacon = null
 
     payload = {
       address: '10.20.30.40'
@@ -57,27 +57,27 @@ describe 'Beakon', ->
     before (done) ->
       async.series([
         (callback) -> simpleExec('zkServer start', callback)
-        (callback) -> rmStar('/beakon/discovery/my:service', callback)
-        (callback) -> zkClient.mkdirp('/beakon', callback)
+        (callback) -> rmStar('/beacon/discovery/my:service', callback)
+        (callback) -> zkClient.mkdirp('/beacon', callback)
       ], done)
 
     after (done) ->
       async.series([
-        (callback) -> rmStar('/beakon/discovery/my:service', callback)
+        (callback) -> rmStar('/beacon/discovery/my:service', callback)
         (callback) -> simpleExec('zkServer stop', callback)
       ], done)
 
     it "works initially", (done) ->
-      myBeakon = beakon {
-        servers: 'localhost:2181/beakon'
+      myBeacon = beacon {
+        servers: 'localhost:2181/beacon'
         path: '/discovery/my:service'
         payload
       }
 
       setTimeout((->
-        expect(myBeakon.connected).to.be.true
+        expect(myBeacon.connected).to.be.true
         zkClient.getData(
-          "/beakon/discovery/my:service/#{myBeakon.id}"
+          "/beacon/discovery/my:service/#{myBeacon.id}"
           (error, data, stat) ->
             expect(error).to.not.exist
             expect(JSON.parse(data.toString())).to.deep.equal(payload)
@@ -90,7 +90,7 @@ describe 'Beakon', ->
         (callback) -> simpleExec('zkServer stop', callback)
         (callback) -> setTimeout(callback, 50)
         (callback) ->
-          expect(myBeakon.connected).to.be.false
+          expect(myBeacon.connected).to.be.false
           callback()
       ], done)
 
@@ -100,25 +100,7 @@ describe 'Beakon', ->
         (callback) -> simpleExec('zkServer start', callback)
         (callback) -> setTimeout(callback, 1000)
         (callback) ->
-          expect(myBeakon.connected).to.be.true
+          expect(myBeacon.connected).to.be.true
           callback()
       ], done)
-
-
-      # zkClient.getData(
-      #   "/beakon/discovery/my:service/#{myBeakon.id}"
-      #   (error, data, stat) ->
-      #     expect(error).to.exist
-      #     console.log error
-      #     expect(error.code).to.equal(zookeeper.Exception.NO_NODE)
-      #     callback()
-      # )
-
-
-
-
-
-
-
-
 
