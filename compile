@@ -1,0 +1,6 @@
+#!/bin/bash
+rm -rf build/*
+
+# All files
+coffee --compile --bare --output build src
+

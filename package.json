@@ -1,0 +1,30 @@
+{
+  "name": "beacon",
+  "version": "0.1.0",
+  "description": "A simple ZooKeeper announce library",
+  "keywords": [
+    "zookeeper",
+    "announce"
+  ],
+  "author": {
+    "name": "Vadim Ogievetsky",
+    "url": "http://vadim.ogievetsky.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/vogievetsky/beacon.git"
+  },
+  "main": "build/beacon.js",
+  "scripts": {
+    "install": "./compile"
+  },
+  "dependencies": {
+    "node-zookeeper-client": "~0.2.0",
+    "node-uuid": "~1.4.1"
+  },
+  "devDependencies": {
+    "async": "0.2.5",
+    "chai": "~1.6.0",
+    "node-zookeeper-client": "~0.2.0"
+  }
+}
