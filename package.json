@@ -28,6 +28,7 @@
     "mocha": "~1.21.4",
     "async": "0.2.5",
     "chai": "~1.6.0",
-    "node-zookeeper-client": "~0.2.0"
+    "node-zookeeper-client": "~0.2.0",
+    "coffee-script": "~1.8.0"
   }
 }
