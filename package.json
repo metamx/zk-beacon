@@ -1,6 +1,6 @@
 {
-  "name": "beacon",
-  "version": "0.1.0",
+  "name": "zk-beacon",
+  "version": "0.1.1",
   "description": "A simple ZooKeeper announce library",
   "keywords": [
     "zookeeper",
@@ -10,9 +10,10 @@
     "name": "Vadim Ogievetsky",
     "url": "http://vadim.ogievetsky.com"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "http://github.com/vogievetsky/beacon.git"
+    "url": "http://github.com/metamx/zk-beacon.git"
   },
   "main": "build/beacon.js",
   "scripts": {
