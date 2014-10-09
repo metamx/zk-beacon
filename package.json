@@ -7,8 +7,8 @@
     "announce"
   ],
   "author": {
-    "name": "Vadim Ogievetsky",
-    "url": "http://vadim.ogievetsky.com"
+    "name": "Metamarkets",
+    "url": "http://metamarkets.com/"
   },
   "license": "MIT",
   "repository": {
@@ -17,13 +17,15 @@
   },
   "main": "build/beacon.js",
   "scripts": {
-    "install": "./compile"
+    "prepublish": "./prepublish",
+    "test": "./run-tests"
   },
   "dependencies": {
     "node-zookeeper-client": "~0.2.0",
     "node-uuid": "~1.4.1"
   },
   "devDependencies": {
+    "mocha": "~1.21.4",
     "async": "0.2.5",
     "chai": "~1.6.0",
     "node-zookeeper-client": "~0.2.0"
