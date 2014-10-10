@@ -10,6 +10,16 @@
     "name": "Metamarkets",
     "url": "http://metamarkets.com/"
   },
+  "contributors": [
+    {
+      "name": "Vadim Ogievetsky",
+      "email": "vadim@metamarkets.com"
+    },
+    {
+      "name": "Young Min Kim",
+      "email": "young@metamarkets.com"
+    }
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
