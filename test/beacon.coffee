@@ -54,26 +54,22 @@ describe 'Beacon', ->
       port: 8080
     }
 
-    before (done) ->
+    beforeEach (done) ->
       async.series([
         (callback) -> simpleExec('zkServer start', callback)
         (callback) -> rmStar('/beacon/discovery/my:service', callback)
         (callback) -> zkClient.mkdirp('/beacon', callback)
-      ], done)
-
-    after (done) ->
-      async.series([
-        (callback) -> rmStar('/beacon/discovery/my:service', callback)
-        (callback) -> simpleExec('zkServer stop', callback)
-      ], done)
+      ], (err) ->
+        return done(err) if err
+        myBeacon = beacon {
+          servers: 'localhost:2181/beacon'
+          path: '/discovery/my:service'
+          payload
+        }
+        done()
+      )
 
     it "works initially", (done) ->
-      myBeacon = beacon {
-        servers: 'localhost:2181/beacon'
-        path: '/discovery/my:service'
-        payload
-      }
-
       setTimeout((->
         expect(myBeacon.connected).to.be.true
         zkClient.getData(
@@ -81,26 +77,58 @@ describe 'Beacon', ->
           (error, data, stat) ->
             expect(error).to.not.exist
             expect(JSON.parse(data.toString())).to.deep.equal(payload)
-            done()
+
+            async.series([
+              (callback) -> rmStar('/beacon/discovery/my:service', callback)
+              (callback) -> simpleExec('zkServer stop', callback)
+            ], done)
         )
       ), 50)
 
-    it "works on disconnect", (done) ->
-      async.series([
-        (callback) -> simpleExec('zkServer stop', callback)
-        (callback) -> setTimeout(callback, 50)
-        (callback) ->
-          expect(myBeacon.connected).to.be.false
-          callback()
-      ], done)
+    it "emits disconnect event", (done) ->
+      checked = false
+      myBeacon.on('disconnected', ->
+        return if checked
+        checked = true
+        expect(myBeacon.connected).to.be.false
+        setTimeout(done, 1000)
+      )
+      simpleExec('zkServer stop', ->)
 
-    it "works on reconnect", (done) ->
-      async.series([
-        (callback) -> setTimeout(callback, 1000)
-        (callback) -> simpleExec('zkServer start', callback)
-        (callback) -> setTimeout(callback, 1000)
-        (callback) ->
+    it "reconnect when server comes back", (done) ->
+      checked = false
+      myBeacon.on('disconnected', ->
+        return if checked
+        checked = true
+        expect(myBeacon.connected).to.be.false
+
+        checked = false
+        myBeacon.on('connected', ->
+          return if checked
+          checked = true
           expect(myBeacon.connected).to.be.true
-          callback()
-      ], done)
+
+          async.series([
+            # (callback) -> rmStar('/beacon/discovery/my:service', callback)
+            (callback) -> simpleExec('zkServer stop', callback)
+          ], done)
+        )
+        simpleExec('zkServer start', ->)
+      )
+      simpleExec('zkServer stop', ->)
+
+    it "emits expired event", (done) ->
+      setTimeout( ->
+        checked = false
+        myBeacon.on('expired', ->
+          return if checked
+          checked = true
+          expect(myBeacon.connected).to.be.false
+          async.series([
+            (callback) -> rmStar('/beacon/discovery/my:service', callback)
+            (callback) -> simpleExec('zkServer stop', callback)
+          ], done)
+        )
+        myBeacon.__client.onConnectionManagerState(-3) # SESSION_EXPIRED EVENT CODE
+      , 1000)
 

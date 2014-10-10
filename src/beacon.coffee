@@ -48,6 +48,12 @@ module.exports = ({servers, path, payload}) ->
     emitter.emit('expired')
   )
 
+  client.on('expired', ->
+    emitter.connected = false
+    emitter.emit('expired')
+  )
+
   client.connect()
+  emitter.__client = client
   return emitter
 
