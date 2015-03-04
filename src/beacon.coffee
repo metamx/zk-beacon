@@ -6,54 +6,60 @@ zookeeper = require('node-zookeeper-client')
 {CreateMode, Exception} = zookeeper
 
 module.exports = ({servers, path, payload}) ->
-  client = zookeeper.createClient(servers)
   emitter = new EventEmitter()
   emitter.id = uuid.v1()
   emitter.connected = false
 
-  client.on('connected', ->
-    emitter.connected = true
-    emitter.emit('connected')
+  connect = ->
+    client = zookeeper.createClient(servers, {
+      sessionTimeout: 1000
+      spinDelay: 100
+      retries: 3
+    })
 
-    client.mkdirp(
-      path
-      (err) ->
-        if err
-          emitter.emit('error', new Error("Failed to create path: #{path} due to: #{err}."))
-          return
+    client.on('connected', ->
+      emitter.connected = true
+      emitter.emit('connected')
 
-        client.create(
-          path + '/' + emitter.id
-          new Buffer(JSON.stringify(payload))
-          CreateMode.EPHEMERAL
-          (err) ->
-            if err and err.getCode() isnt Exception.NODE_EXISTS
-              emitter.emit('error', new Error("Failed to create node: #{path}/#{emitter.id} due to: #{err}."))
-              return
-
-            emitter.emit('created', emitter.id)
+      client.mkdirp(
+        path
+        (err) ->
+          if err
+            emitter.emit('error', new Error("Failed to create path: #{path} due to: #{err}."))
             return
-        )
-        return
+
+          client.create(
+            path + '/' + emitter.id
+            new Buffer(JSON.stringify(payload))
+            CreateMode.EPHEMERAL
+            (err) ->
+              if err and err.getCode() isnt Exception.NODE_EXISTS
+                emitter.emit('error', new Error("Failed to create node: #{path}/#{emitter.id} due to: #{err}."))
+                return
+
+              emitter.emit('created', emitter.id)
+              return
+          )
+          return
+      )
     )
-  )
 
-  client.on('disconnected', ->
-    emitter.connected = false
-    emitter.emit('disconnected')
-  )
+    client.on('disconnected', ->
+      emitter.connected = false
+      emitter.emit('disconnected')
+    )
 
-  client.on('expired', ->
-    emitter.connected = false
-    emitter.emit('expired')
-  )
+    client.on('expired', ->
+      emitter.connected = false
+      emitter.emit('expired')
+    )
 
-  client.on('expired', ->
-    emitter.connected = false
-    emitter.emit('expired')
-  )
+    emitter.__client = client
+    client.connect()
 
-  client.connect()
-  emitter.__client = client
+  emitter.on('expired', ->
+    connect()
+  )
+  connect()
   return emitter
 

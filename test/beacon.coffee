@@ -6,14 +6,7 @@ zookeeper = require('node-zookeeper-client')
 
 beacon = require '../src/beacon'
 
-zkClient = zookeeper.createClient(
-  'localhost:2181',
-  {
-    sessionTimeout: 10000
-    spinDelay: 1000
-    retries: 0
-  }
-)
+zkClient = null
 
 rmStar = (path, callback) ->
   zkClient.getChildren(path, (err, children) ->
@@ -32,12 +25,10 @@ rmStar = (path, callback) ->
     return
   )
 
-zkClient.connect()
 
 simpleExec = (cmd, done) ->
   exec(cmd, (err, stdout, stderr) ->
     if err
-      console.log(cmd)
       console.log('  stdout: ' + stdout)
       console.log('  stderr: ' + stderr)
       console.log('  exec err: ' + err)
@@ -45,59 +36,89 @@ simpleExec = (cmd, done) ->
   )
 
 describe 'Beacon', ->
-  describe 'normal function', ->
-    @timeout 5000
-    myBeacon = null
+  @timeout 5000
+  myBeacon = null
 
-    payload = {
-      address: '10.20.30.40'
-      port: 8080
-    }
+  payload = {
+    address: '10.20.30.40'
+    port: 8080
+  }
 
-    beforeEach (done) ->
-      async.series([
-        (callback) -> simpleExec('zkServer start', callback)
-        (callback) -> rmStar('/beacon/discovery/my:service', callback)
-        (callback) -> zkClient.mkdirp('/beacon', callback)
-      ], (err) ->
-        return done(err) if err
-        myBeacon = beacon {
-          servers: 'localhost:2181/beacon'
-          path: '/discovery/my:service'
-          payload
-        }
-        done()
+  beforeEach (done) ->
+    zkClient = zookeeper.createClient(
+      'localhost:2181',
+      {
+        sessionTimeout: 1000
+        spinDelay: 100
+        retries: 3
+      }
+    )
+    zkClient.connect()
+
+    async.series([
+      (callback) -> simpleExec('zkServer.sh start', callback)
+      (callback) -> rmStar('/beacon/discovery/my:service', callback)
+      (callback) -> zkClient.mkdirp('/beacon', callback)
+    ], (err) ->
+      return done(err) if err
+      myBeacon = beacon {
+        servers: 'localhost:2181/beacon'
+        path: '/discovery/my:service'
+        payload
+      }
+      done()
+    )
+
+  afterEach (done) ->
+    setTimeout(done, 1000) # add buffer for zkServer teardown time
+
+  it "connects initially", (done) ->
+    setTimeout((->
+      expect(myBeacon.connected).to.be.true
+      zkClient.getData(
+        "/beacon/discovery/my:service/#{myBeacon.id}"
+        (error, data, stat) ->
+          expect(error).to.not.exist
+          expect(JSON.parse(data.toString())).to.deep.equal(payload)
+
+          async.series([
+            (callback) -> rmStar('/beacon/discovery/my:service', callback)
+            (callback) -> simpleExec('zkServer.sh stop', callback)
+          ], done)
       )
+    ), 50)
 
-    it "works initially", (done) ->
-      setTimeout((->
-        expect(myBeacon.connected).to.be.true
-        zkClient.getData(
-          "/beacon/discovery/my:service/#{myBeacon.id}"
-          (error, data, stat) ->
-            expect(error).to.not.exist
-            expect(JSON.parse(data.toString())).to.deep.equal(payload)
+  it "reconnect when server comes back", (done) ->
+    checked = false
+    myBeacon.on('disconnected', ->
+      return if checked
+      checked = true
+      expect(myBeacon.connected).to.be.false
 
-            async.series([
-              (callback) -> rmStar('/beacon/discovery/my:service', callback)
-              (callback) -> simpleExec('zkServer stop', callback)
-            ], done)
-        )
-      ), 50)
-
-    it "emits disconnect event", (done) ->
       checked = false
-      myBeacon.on('disconnected', ->
+      myBeacon.on('connected', ->
         return if checked
         checked = true
-        expect(myBeacon.connected).to.be.false
-        setTimeout(done, 1000)
-      )
-      simpleExec('zkServer stop', ->)
+        expect(myBeacon.connected).to.be.true
 
-    it "reconnect when server comes back", (done) ->
+        async.series([
+          (callback) -> rmStar('/beacon/discovery/my:service', callback)
+          (callback) -> simpleExec('zkServer.sh stop', callback)
+        ], done)
+      )
+      setTimeout(
+        -> simpleExec('zkServer.sh start', ->)
+      , 1000)
+
+    )
+    simpleExec('zkServer.sh stop', ->)
+
+  it "emits expired event and replaces the expired client", (done) ->
+    firstClient = myBeacon.__client
+
+    setTimeout( ->
       checked = false
-      myBeacon.on('disconnected', ->
+      myBeacon.on('expired', ->
         return if checked
         checked = true
         expect(myBeacon.connected).to.be.false
@@ -107,28 +128,13 @@ describe 'Beacon', ->
           return if checked
           checked = true
           expect(myBeacon.connected).to.be.true
+          expect(myBeacon.__client).not.to.equal(firstClient)
 
-          async.series([
-            # (callback) -> rmStar('/beacon/discovery/my:service', callback)
-            (callback) -> simpleExec('zkServer stop', callback)
-          ], done)
-        )
-        simpleExec('zkServer start', ->)
-      )
-      simpleExec('zkServer stop', ->)
-
-    it "emits expired event", (done) ->
-      setTimeout( ->
-        checked = false
-        myBeacon.on('expired', ->
-          return if checked
-          checked = true
-          expect(myBeacon.connected).to.be.false
           async.series([
             (callback) -> rmStar('/beacon/discovery/my:service', callback)
-            (callback) -> simpleExec('zkServer stop', callback)
+            (callback) -> simpleExec('zkServer.sh stop', callback)
           ], done)
         )
-        myBeacon.__client.onConnectionManagerState(-3) # SESSION_EXPIRED EVENT CODE
-      , 1000)
-
+      )
+      myBeacon.__client.onConnectionManagerState(-3) # SESSION_EXPIRED EVENT CODE
+    , 1000)
