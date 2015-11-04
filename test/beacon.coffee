@@ -4,9 +4,11 @@ exec = require('child_process').exec
 async = require('async')
 zookeeper = require('node-zookeeper-client')
 
-beacon = require '../src/beacon'
+beacon = require '../build/beacon'
 
 zkClient = null
+
+zkExecutablePath = 'zkServer.sh'
 
 rmStar = (path, callback) ->
   zkClient.getChildren(path, (err, children) ->
@@ -56,7 +58,7 @@ describe 'Beacon', ->
     zkClient.connect()
 
     async.series([
-      (callback) -> simpleExec('zkServer.sh start', callback)
+      (callback) -> simpleExec(zkExecutablePath + ' start', callback)
       (callback) -> rmStar('/beacon/discovery/my:service', callback)
       (callback) -> zkClient.mkdirp('/beacon', callback)
     ], (err) ->
@@ -83,7 +85,7 @@ describe 'Beacon', ->
 
           async.series([
             (callback) -> rmStar('/beacon/discovery/my:service', callback)
-            (callback) -> simpleExec('zkServer.sh stop', callback)
+            (callback) -> simpleExec(zkExecutablePath + ' stop', callback)
           ], done)
       )
     ), 50)
@@ -103,15 +105,15 @@ describe 'Beacon', ->
 
         async.series([
           (callback) -> rmStar('/beacon/discovery/my:service', callback)
-          (callback) -> simpleExec('zkServer.sh stop', callback)
+          (callback) -> simpleExec(zkExecutablePath + ' stop', callback)
         ], done)
       )
       setTimeout(
-        -> simpleExec('zkServer.sh start', ->)
+        -> simpleExec(zkExecutablePath + ' start', ->)
       , 1000)
 
     )
-    simpleExec('zkServer.sh stop', ->)
+    simpleExec(zkExecutablePath + ' stop', ->)
 
   it "emits expired event and replaces the expired client", (done) ->
     firstClient = myBeacon.__client
@@ -132,7 +134,7 @@ describe 'Beacon', ->
 
           async.series([
             (callback) -> rmStar('/beacon/discovery/my:service', callback)
-            (callback) -> simpleExec('zkServer.sh stop', callback)
+            (callback) -> simpleExec(zkExecutablePath + ' stop', callback)
           ], done)
         )
       )
