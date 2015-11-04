@@ -28,7 +28,7 @@ var beacon =  function (options) {
                 path,
                 (err) => {
                     if (err) {
-                        emitter.emit('error', new Error("Failed to create path: #{path} due to: #{err}."));
+                        emitter.emit('error', new Error(`Failed to create path: ${path} due to: ${err}.`));
                         return;
                     }
                     client.create(
@@ -37,7 +37,7 @@ var beacon =  function (options) {
                         zookeeper.CreateMode.EPHEMERAL,
                         (createErr) => {
                             if (createErr && createErr.getCode() !== zookeeper.Exception.NODE_EXISTS) {
-                                emitter.emit('error', new Error("Failed to create node: #{path}/#{emitter.id} due to: #{err}."));
+                                emitter.emit('error', new Error(`Failed to create node: ${path}/${emitter.id} due to: ${err}.`));
                                 return;
                             }
                             emitter.emit('created', emitter.id);
