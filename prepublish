@@ -1,4 +1,0 @@
-#!/bin/bash -e
-./run-tests
-./compile
-exit 0

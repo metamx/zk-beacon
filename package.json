@@ -27,18 +27,23 @@
   },
   "main": "build/beacon.js",
   "scripts": {
-    "prepublish": "./prepublish",
-    "test": "./run-tests"
+    "tsd":"./node_modules/.bin/tsd reinstall",
+    "tslint":"./node_modules/.bin/tslint src/*.ts",
+    "build":"./node_modules/.bin/tsc src/*.ts typings/*/*.d.ts typings_custom/*.d.ts --outDir build/ --m commonjs -d -sourceMap --mapRoot src/ --rootDir src/ --target ES5",
+    "prepublish": "npm run tsd && npm run tslint && npm run build && npm run test",
+    "test": "./node_modules/.bin/mocha"
   },
   "dependencies": {
     "node-zookeeper-client": "~0.2.2",
-    "node-uuid": "~1.4.2"
+    "node-uuid": "~1.4.3"
   },
   "devDependencies": {
-    "mocha": "~2.1.0",
     "async": "0.9.0",
     "chai": "~1.10.0",
-    "node-zookeeper-client": "~0.2.2",
-    "coffee-script": "~1.9.0"
+    "coffee-script": "~1.9.0",
+    "mocha": "~2.1.0",
+    "tsd":"^0.6.5",
+    "tslint":"^2.5.1",
+    "typescript":"^1.6.2"
   }
 }
