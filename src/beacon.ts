@@ -15,6 +15,7 @@ var beacon =  function (options) {
 
     var connect = () => {
         var client = zookeeper.createClient(servers, {
+            sessionTimeout: 15000,
             retries: 3
         });
 
