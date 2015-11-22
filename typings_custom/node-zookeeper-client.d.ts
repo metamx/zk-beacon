@@ -5,9 +5,9 @@ declare module "node-zookeeper-client" {
     import events = require("events");
 
     export interface ClientOptions {
-        sessionTimeout: number;
-        spinDelay: number;
-        retries: number;
+        sessionTimeout?: number;
+        spinDelay?: number;
+        retries?: number;
     }
 
     export class ACL {
