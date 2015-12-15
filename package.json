@@ -27,12 +27,9 @@
   },
   "main": "build/beacon.js",
   "scripts": {
-    "tsd": "./node_modules/.bin/tsd reinstall",
-    "tslint": "./node_modules/.bin/tslint src/*.ts",
-    "build": "./node_modules/.bin/tsc src/*.ts typings/*/*.d.ts typings_custom/*.d.ts --outDir build/ --m commonjs -d -sourceMap --mapRoot src/ --rootDir src/ --target ES5",
-    "bundle": "node extra/bundle.js",
-    "prepublish": "npm run tsd && npm run tslint && npm run build && npm run bundle && npm run test",
-    "test": "./node_modules/.bin/mocha"
+    "build": "node_modules/.bin/grunt",
+    "prepublish": "npm run build",
+    "test": "node_modules/.bin/mocha"
   },
   "typescript": {
     "definition": "build/zk-beacon.d.ts"
@@ -45,10 +42,17 @@
     "async": "~1.5.0",
     "chai": "~3.4.1",
     "coffee-script": "~1.10.0",
-    "dts-bundle": "~0.3.0",
+    "dts-generator": "^1.6.3",
+    "grunt": "^0.4.5",
+    "grunt-cli": "^0.1.13",
+    "grunt-contrib-copy": "^0.8.2",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-ts": "^5.2.0",
+    "grunt-tsd": "^0.2.0-beta.1",
+    "grunt-tslint": "^3.0.0",
     "mocha": "~2.3.4",
-    "tsd": "~0.6.5",
-    "tslint": "~3.0.0",
-    "typescript": "~1.6.2"
+    "tsd": "^0.6.5",
+    "tslint": "^3.1.1",
+    "typescript": "^1.7.3"
   }
 }
