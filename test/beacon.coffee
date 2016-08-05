@@ -4,11 +4,14 @@ exec = require('child_process').exec
 async = require('async')
 zookeeper = require('node-zookeeper-client')
 
-beacon = require '../build/beacon'
+{ ZookeeperBeacon } = require '../build/beacon'
+beacon = ZookeeperBeacon
 
 zkClient = null
 
-zkExecutablePath = 'zkServer.sh'
+# replace with your path to zkServer to test
+# todo: rework with docker?
+zkExecutablePath = '~/Downloads/zookeeper-3.4.6/bin/zkServer.sh'
 
 rmStar = (path, callback) ->
   zkClient.getChildren(path, (err, children) ->
@@ -63,7 +66,7 @@ describe 'Beacon', ->
       (callback) -> zkClient.mkdirp('/beacon', callback)
     ], (err) ->
       return done(err) if err
-      myBeacon = beacon {
+      myBeacon = new beacon {
         servers: 'localhost:2181/beacon'
         path: '/discovery/my:service'
         payload
@@ -116,7 +119,7 @@ describe 'Beacon', ->
     simpleExec(zkExecutablePath + ' stop', ->)
 
   it "emits expired event and replaces the expired client", (done) ->
-    firstClient = myBeacon.__client
+    firstClient = myBeacon.client
 
     setTimeout( ->
       checked = false
@@ -130,7 +133,7 @@ describe 'Beacon', ->
           return if checked
           checked = true
           expect(myBeacon.connected).to.be.true
-          expect(myBeacon.__client).not.to.equal(firstClient)
+          expect(myBeacon.client).not.to.equal(firstClient)
 
           async.series([
             (callback) -> rmStar('/beacon/discovery/my:service', callback)
@@ -138,5 +141,5 @@ describe 'Beacon', ->
           ], done)
         )
       )
-      myBeacon.__client.onConnectionManagerState(-3) # SESSION_EXPIRED EVENT CODE
+      myBeacon.client.onConnectionManagerState(-3) # SESSION_EXPIRED EVENT CODE
     , 1000)
