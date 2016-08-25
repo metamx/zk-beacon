@@ -1,0 +1,9 @@
+{
+  "name": "zk-beacon",
+  "globalDependencies": {
+    "node-uuid": "github:DefinitelyTyped/DefinitelyTyped/node-uuid/node-uuid.d.ts#0dd29bf8253536ae24e61c109524e924ea510046",
+    "node-uuid-base": "github:DefinitelyTyped/DefinitelyTyped/node-uuid/node-uuid-base.d.ts#0dd29bf8253536ae24e61c109524e924ea510046",
+    "node-uuid-cjs": "github:DefinitelyTyped/DefinitelyTyped/node-uuid/node-uuid-cjs.d.ts#0dd29bf8253536ae24e61c109524e924ea510046",
+    "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#0dd29bf8253536ae24e61c109524e924ea510046"
+  }
+}
