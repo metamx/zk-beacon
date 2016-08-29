@@ -31,9 +31,9 @@ ERROR: "error"
 
 #### example
 ```typescript
-import { ZookeeperBeacon } from 'zk-beacon';
+import { ZookeeperBeacon, BeaconEvents } from 'zk-beacon';
 
-const serviceBeacon = beacon({
+const serviceBeacon = new ZookeeperBeacon({
     servers: 'localhost:2181/discovery',
     path: `/myserviceidentifier`,
     payload: {
@@ -42,7 +42,7 @@ const serviceBeacon = beacon({
     }
 });
 
-serviceBeacon.on('connected', () => {
+serviceBeacon.on(BeaconEvents.CONNECTED, () => {
     console.log('beacon connected');
 });
 ```
