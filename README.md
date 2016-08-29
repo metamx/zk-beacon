@@ -31,7 +31,7 @@ ERROR: "error"
 
 #### example
 ```typescript
-import beacon = require('zk-beacon');
+import { ZookeeperBeacon } from 'zk-beacon';
 
 const serviceBeacon = beacon({
     servers: 'localhost:2181/discovery',
