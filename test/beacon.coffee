@@ -4,7 +4,7 @@ exec = require('child_process').exec
 async = require('async')
 zookeeper = require('node-zookeeper-client')
 
-{ ZookeeperBeacon } = require '../build/beacon'
+{ ZookeeperBeacon } = require '../build/index'
 beacon = ZookeeperBeacon
 
 zkClient = null
