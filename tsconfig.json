@@ -8,16 +8,9 @@
         "rootDir": "src/",
         "declaration": true
     },
-    "filesGlob": [
+    "include": [
         "src/**/*.ts",
         "typings/index.d.ts",
         "typings_local/*.ts"
-    ],
-    "files": [
-        "src/beaconEvents.ts",
-        "src/index.ts",
-        "src/zookeeperBeacon.ts",
-        "typings/index.d.ts",
-        "typings_local/node-zookeeper-client.d.ts"
     ]
 }
