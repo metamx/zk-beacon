@@ -16,26 +16,25 @@
     "definition": "build/zk-beacon.d.ts"
   },
   "scripts": {
-    "dts": "dts-generator --name zk-beacon --out build/zk-beacon.d.ts --project `(pwd)` --main zk-beaconld/index",
     "compile": "tsc",
     "lint": "tslint -c tslint.json src/**/*.ts",
-    "typings": "typings install",
-    "build": "npm run typings && npm run lint && npm run compile && npm run dts ",
+    "build": "npm run lint && npm run compile",
     "prepublish": "npm run build",
     "test": "node_modules/.bin/mocha"
   },
   "dependencies": {
-    "node-zookeeper-client": "~0.2.2",
-    "node-uuid": "~1.4.7"
+    "@types/node": "^7.0.12",
+    "@types/node-zookeeper-client": "^0.2.1",
+    "@types/uuid": "^2.0.29",
+    "node-zookeeper-client": "^0.2.2",
+    "uuid": "^3.0.1"
   },
   "devDependencies": {
-    "async": "^2.1.2",
+    "async": "^2.2.0",
     "chai": "^3.5.0",
-    "coffee-script": "^1.10.0",
-    "dts-generator": "2.0.0",
-    "mocha": "^3.1.2",
-    "tslint": "^3.15.1",
-    "typescript": "^2.0.3",
-    "typings": "^1.4.0"
+    "coffee-script": "^1.12.4",
+    "mocha": "^3.2.0",
+    "tslint": "^5.0.0",
+    "typescript": "^2.2.2"
   }
 }

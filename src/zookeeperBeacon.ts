@@ -1,7 +1,6 @@
-import uuid = require('node-uuid');
-import zookeeper = require('node-zookeeper-client');
 import { EventEmitter } from 'events';
-
+import * as zookeeper from 'node-zookeeper-client';
+import * as uuid from 'uuid';
 import { BeaconEvents } from './beaconEvents';
 
 export interface ZookeeperBeaconOptions {
@@ -11,10 +10,9 @@ export interface ZookeeperBeaconOptions {
     spinDelay? : number;
 }
 
-
 export class ZookeeperBeacon extends EventEmitter {
-    id : string;
-    connected : boolean;
+    private id : string;
+    private connected : boolean;
 
     private config : ZookeeperBeaconOptions;
     private client : zookeeper.Client;
@@ -43,10 +41,10 @@ export class ZookeeperBeacon extends EventEmitter {
         if (this.client) {
             this.client.removeAllListeners();
         }
-        
+
         this.client = zookeeper.createClient(this.config.servers, {
-            sessionTimeout: 15000,
-            retries: 3
+            retries: 3,
+            sessionTimeout: 15000
         });
 
         this.client.on('connected', () => {
@@ -57,7 +55,8 @@ export class ZookeeperBeacon extends EventEmitter {
                 this.config.path,
                 (err) => {
                     if (err) {
-                        this.emit(BeaconEvents.ERROR, new Error(`Failed to create path: ${this.config.path} due to: ${err}.`));
+                        this.emit(BeaconEvents.ERROR,
+                            new Error(`Failed to create path: ${this.config.path} due to: ${err}.`));
                         return;
                     }
                     this.client.create(
@@ -65,8 +64,9 @@ export class ZookeeperBeacon extends EventEmitter {
                         new Buffer(JSON.stringify(this.config.payload)),
                         zookeeper.CreateMode.EPHEMERAL,
                         (createErr) => {
-                            if (createErr && createErr.getCode() !== zookeeper.Exception.NODE_EXISTS) {
-                                this.emit(BeaconEvents.ERROR, new Error(`Failed to create node: ${this.config.path}/${this.id} due to: ${err}.`));
+                            if (createErr && ((createErr as any).getCode() !== zookeeper.Exception.NODE_EXISTS)) {
+                                this.emit(BeaconEvents.ERROR,
+                                    new Error(`Failed to create node: ${this.config.path}/${this.id} due to: ${err}.`));
                                 return;
                             }
                             this.emit(BeaconEvents.CREATED, this.id);
