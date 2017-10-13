@@ -12,6 +12,7 @@
     "url": "http://github.com/metamx/zk-beacon.git"
   },
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "typescript": {
     "definition": "build/zk-beacon.d.ts"
   },
